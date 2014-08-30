@@ -1,0 +1,26 @@
+{
+  "name": "hello_web",
+  "version": "0.0.0",
+  "authors": [
+    "Thomas B Homburg <thomas@homburg.dk>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.23",
+    "angular-resource": "~1.2.23"
+  },
+  "overrides": {
+    "prelude-ls": {
+      "main": [
+        "browser/prelude-browser.js"
+      ]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+doctype html
+head
+  script(type="text/javascript", src="vendor.js")
+  script(type="text/javascript", src="hello.js")
+  link(rel="stylesheet", href="hello.css")
+  title Hello ctrl
+body(ng-app="Hello", ng-controller="HelloCtrl as hello")
+  h1(ng-bind="hello.title")
+  h2 Users
+  pre(ng-bind="hello.users | json")
+  ul
+    li(ng-repeat="user in hello.users track by user.Id")
+      a(
+        ng-click="hello.pickUser(user.Id)"
+        ng-bind="user.Name"
+      )
+  h2 User
+  pre(ng-bind="hello.user | json")
