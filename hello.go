@@ -7,6 +7,7 @@ import (
 	"github.com/codegangsta/negroni"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/lann/squirrel"
 	"log"
 	"net/http"
 	"runtime"
@@ -37,9 +38,6 @@ func fetchUsers(db *sql.DB) []User {
 
 		dbUser := User{id, name, age}
 
-		log.Println("User")
-		log.Println(dbUser)
-
 		users = append(users, dbUser)
 	}
 
@@ -48,9 +46,9 @@ func fetchUsers(db *sql.DB) []User {
 
 func seedUsers(db *sql.DB) {
 	users := []User{
-		{1, "Brian", 19},
-		{2, "Thomas", 32},
-		{3, "Tonny", 99},
+		{0, "Brian", 19},
+		{0, "Thomas", 32},
+		{0, "Tonny", 99},
 	}
 
 	_, err := db.Exec("CREATE TABLE IF NOT EXISTS user (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), age INT)")
@@ -60,7 +58,7 @@ func seedUsers(db *sql.DB) {
 
 	log.Println("Inserting...")
 	for _, user := range users {
-		_, err = db.Exec("INSERT INTO user (name, age) values (?, ?)", user.Name, user.Age)
+		_, err = squirrel.Insert("user").Columns("name", "age").Values(user.Name, user.Age).RunWith(db).Exec()
 		if nil != err {
 			log.Fatal(err)
 		}
@@ -90,9 +88,11 @@ func main() {
 	r.Handle("/", http.RedirectHandler("/hello.html", 301))
 
 	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
+		users := fetchUsers(db)
 		w.Header()["content-type"] = []string{"application/json"}
-		fmt.Fprint(w, toJson(fetchUsers(db)))
-	})
+		w.Header()["x-count"] = []string{strconv.FormatInt(int64(len(users)), 10)}
+		fmt.Fprint(w, toJson(users))
+	}).Methods("GET", "HEAD")
 
 	r.HandleFunc("/data/{id}", func(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
@@ -103,7 +103,7 @@ func main() {
 			return
 		}
 
-		row := db.QueryRow("SELECT name, age FROM hello_go.user where id = ?", id)
+		row := squirrel.Select("name", "age").From("user").Where(squirrel.Eq{"id": id}).RunWith(db).QueryRow()
 
 		var name string
 		var age int
@@ -116,6 +116,21 @@ func main() {
 		w.Header()["content-type"] = []string{"application/json"}
 		fmt.Fprint(w, toJson(User{int(id), name, age}))
 	})
+
+	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
+		log.Println("Deleting...")
+		_, err := squirrel.Delete("user").RunWith(db).Exec()
+		if nil != err {
+			log.Println(err)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}).Methods("DELETE")
+
+	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
+		log.Println("Seeding...")
+		seedUsers(db)
+		w.WriteHeader(http.StatusCreated)
+	}).Methods("POST")
 
 	n := negroni.Classic()
 	n.UseHandler(r)
