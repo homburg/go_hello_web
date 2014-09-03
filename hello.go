@@ -87,14 +87,14 @@ func main() {
 	r := mux.NewRouter()
 	r.Handle("/", http.RedirectHandler("/hello.html", 301))
 
-	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
+	r.Methods("GET", "HEAD").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		users := fetchUsers(db)
 		w.Header()["content-type"] = []string{"application/json"}
 		w.Header()["x-count"] = []string{strconv.FormatInt(int64(len(users)), 10)}
 		fmt.Fprint(w, toJson(users))
-	}).Methods("GET", "HEAD")
+	})
 
-	r.HandleFunc("/data/{id}", func(w http.ResponseWriter, req *http.Request) {
+	r.Methods("GET", "HEAD").Path("/data/{id}").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		id, _ := strconv.ParseInt(vars["id"], 10, 0)
 
@@ -117,20 +117,20 @@ func main() {
 		fmt.Fprint(w, toJson(User{int(id), name, age}))
 	})
 
-	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
+	r.Methods("DELETE").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		log.Println("Deleting...")
 		_, err := squirrel.Delete("user").RunWith(db).Exec()
 		if nil != err {
 			log.Println(err)
 		}
 		w.WriteHeader(http.StatusNoContent)
-	}).Methods("DELETE")
+	})
 
-	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
+	r.Methods("POST").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		log.Println("Seeding...")
 		seedUsers(db)
 		w.WriteHeader(http.StatusCreated)
-	}).Methods("POST")
+	})
 
 	n := negroni.Classic()
 	n.UseHandler(r)
