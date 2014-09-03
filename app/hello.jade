@@ -9,6 +9,9 @@ body(ng-app="Hello", ng-controller="HelloCtrl as hello")
   h2 Users
   pre(ng-bind="hello.users | json")
   ul
+    li
+      a(ng-click="hello.create()") Opret
+      a(ng-click="hello.delete()") Slet
     li(ng-repeat="user in hello.users track by user.Id")
       a(
         ng-click="hello.pickUser(user.Id)"

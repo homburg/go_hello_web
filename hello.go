@@ -91,7 +91,11 @@ func main() {
 		users := fetchUsers(db)
 		w.Header()["content-type"] = []string{"application/json"}
 		w.Header()["x-count"] = []string{strconv.FormatInt(int64(len(users)), 10)}
-		fmt.Fprint(w, toJson(users))
+		if len(users) == 0 {
+			w.Write([]byte("[]"))
+		} else {
+			fmt.Fprint(w, toJson(users))
+		}
 	})
 
 	r.Methods("GET", "HEAD").Path("/data/{id}").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -124,6 +128,7 @@ func main() {
 			log.Println(err)
 		}
 		w.WriteHeader(http.StatusNoContent)
+		fmt.Fprint(w, "[]")
 	})
 
 	r.Methods("POST").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
