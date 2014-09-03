@@ -48,12 +48,10 @@ func main() {
 	}
 
 	log.Println("Inserting...")
-	if false {
-		for _, user := range users {
-			_, err = db.Exec("INSERT INTO user (name, age) values (?, ?)", user.Name, user.Age)
-			if nil != err {
-				log.Fatal(err)
-			}
+	for _, user := range users {
+		_, err = db.Exec("INSERT INTO user (name, age) values (?, ?)", user.Name, user.Age)
+		if nil != err {
+			log.Fatal(err)
 		}
 	}
 
