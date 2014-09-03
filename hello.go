@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/codegangsta/negroni"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
 	"runtime"
@@ -19,52 +19,14 @@ type User struct {
 	Age  int
 }
 
-func toJson(data interface{}) string {
-	json, _ := json.MarshalIndent(data, "", "  ")
-	return string(json)
-}
-
-func main() {
-	log.Println("Starting...")
-
-	runtime.GOMAXPROCS(runtime.NumCPU())
-
-	users := []User{
-		{1, "Brian", 19},
-		{2, "Thomas", 32},
-		{3, "Tonny", 99},
-	}
-
-	// DB conn
-	db, err := sql.Open("sqlite3", "./hello.sqlite3")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY, name VARCHAR(255), age INTEGER)")
-	if nil != err {
-		log.Fatal(err)
-	}
-
-	log.Println("Inserting...")
-	for _, user := range users {
-		_, err = db.Exec("INSERT INTO user (name, age) values (?, ?)", user.Name, user.Age)
-		if nil != err {
-			log.Fatal(err)
-		}
-	}
-
+func fetchUsers(db *sql.DB) []User {
 	dbUsers, err := db.Query("SELECT * FROM user")
 	if nil != err {
 		log.Fatal(err)
 	}
 	defer dbUsers.Close()
 
-	log.Println("dbUsers")
-	log.Println(dbUsers)
-
-	users = make([]User, 0)
+	var users []User
 	for dbUsers.Next() {
 		var id int
 		var name string
@@ -81,23 +43,78 @@ func main() {
 		users = append(users, dbUser)
 	}
 
+	return users
+}
+
+func seedUsers(db *sql.DB) {
+	users := []User{
+		{1, "Brian", 19},
+		{2, "Thomas", 32},
+		{3, "Tonny", 99},
+	}
+
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS user (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), age INT)")
+	if nil != err {
+		log.Fatal(err)
+	}
+
+	log.Println("Inserting...")
+	for _, user := range users {
+		_, err = db.Exec("INSERT INTO user (name, age) values (?, ?)", user.Name, user.Age)
+		if nil != err {
+			log.Fatal(err)
+		}
+	}
+}
+
+func toJson(data interface{}) string {
+	json, _ := json.MarshalIndent(data, "", "  ")
+	return string(json)
+}
+
+func main() {
+	log.Println("Starting...")
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	var err error
+
+	// DB conn
+	db, err := sql.Open("mysql", "hello_go@/hello_go")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	seedUsers(db)
+
 	r := mux.NewRouter()
 	r.Handle("/", http.RedirectHandler("/hello.html", 301))
 
 	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, toJson(users))
+		w.Header()["content-type"] = []string{"application/json"}
+		fmt.Fprint(w, toJson(fetchUsers(db)))
 	})
 
 	r.HandleFunc("/data/{id}", func(w http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		id, _ := strconv.ParseInt(vars["id"], 10, 0)
-		id = id - 1
 
-		if id < 0 || int(id) > (len(users)-1) {
+		if id <= 0 {
 			http.NotFound(w, req)
-		} else {
-			fmt.Fprintf(w, toJson(users[id]))
+			return
 		}
+
+		row := db.QueryRow("SELECT name, age FROM hello_go.user where id = ?", id)
+
+		var name string
+		var age int
+		if err = row.Scan(&name, &age); err != nil {
+			log.Println(err)
+			http.NotFound(w, req)
+			return
+		}
+
+		w.Header()["content-type"] = []string{"application/json"}
+		fmt.Fprint(w, toJson(User{int(id), name, age}))
 	})
 
 	n := negroni.Classic()
