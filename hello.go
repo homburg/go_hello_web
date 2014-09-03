@@ -30,9 +30,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "Welcome to the home page!")
-	})
+	r.Handle("/", http.RedirectHandler("/hello.html", 301))
 
 	r.HandleFunc("/data", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, toJson(users))

@@ -1,5 +1,8 @@
 all: hello node_modules bower_components public/hello.js public/hello.html public/vendor.js public/hello.css
 
+run: all
+	./hello
+
 hello: hello.go
 
 %: %.go
