@@ -14,13 +14,7 @@
   ],
   "dependencies": {
     "angular": "~1.2.23",
-    "angular-resource": "~1.2.23"
-  },
-  "overrides": {
-    "prelude-ls": {
-      "main": [
-        "browser/prelude-browser.js"
-      ]
-    }
+    "angular-resource": "~1.2.23",
+	"closure-compiler": "http://dl.google.com/closure-compiler/compiler-latest.zip"
   }
 }
