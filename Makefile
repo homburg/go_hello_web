@@ -1,3 +1,5 @@
+.PHONY: types
+
 all: hello node_modules bower_components public/hello.js public/hello.html public/vendor.js public/hello.css
 
 run: all
@@ -25,3 +27,11 @@ public/vendor.js: bower.json
 
 public/hello.css: app/hello.styl
 	gulp
+
+types:
+	java -jar bower_components/closure-compiler/compiler.jar \
+		--warning_level=VERBOSE \
+		--externs support/externs/angular-1.2.js \
+		--externs support/externs/externs.js \
+		--angular_pass \
+		tmp/hello.js
