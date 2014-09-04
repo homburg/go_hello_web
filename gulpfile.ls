@@ -12,6 +12,9 @@ gulp.task "default", ->
       compilerPath: "bower_components/closure-compiler/compiler.jar"
       fileName: "hello.js"
       warning_level: "VERBOSE"
+      externs:
+        "support/externs/angular-1.2.js"
+        "support/externs/externs.js"
     )
     .pipe $.size showFiles: true
     .pipe gulp.dest "public"
