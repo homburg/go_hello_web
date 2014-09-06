@@ -86,7 +86,6 @@ func main() {
 	seedUsers(db)
 
 	r := mux.NewRouter()
-	r.Handle("/", http.RedirectHandler("/index.html", 301))
 
 	r.Methods("GET", "HEAD").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		users := fetchUsers(db)
