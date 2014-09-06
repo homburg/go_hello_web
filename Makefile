@@ -1,14 +1,13 @@
 .PHONY: types
 
-all: hello node_modules bower_components public/hello.js public/index.html public/vendor.js public/hello.css
+all: go_hello_web node_modules bower_components public/hello.js public/index.html public/vendor.js public/hello.css
 
 run: all
-	./hello
+	./go_hello_web
 
-hello: hello.go
-
-%: %.go
-	go build $*.go
+go_hello_web:
+	go build
+	rice append --exec go_hello_web
 
 node_modules:
 	npm -q update
