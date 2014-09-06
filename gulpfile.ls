@@ -19,7 +19,7 @@ gulp.task "default", ->
     .pipe $.size showFiles: true
     .pipe gulp.dest "public"
 
-  gulp.src "app/hello.jade"
+  gulp.src "app/index.jade"
     .pipe $.jade!
     .pipe gulp.dest "public"
 

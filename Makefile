@@ -1,6 +1,6 @@
 .PHONY: types
 
-all: hello node_modules bower_components public/hello.js public/hello.html public/vendor.js public/hello.css
+all: hello node_modules bower_components public/hello.js public/index.html public/vendor.js public/hello.css
 
 run: all
 	./hello
@@ -19,7 +19,7 @@ bower_components:
 public/hello.js: app/hello.ls
 	gulp
 
-public/hello.html: app/hello.jade
+public/index.html: app/index.jade
 	gulp
 
 public/vendor.js: bower.json

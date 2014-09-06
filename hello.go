@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/GeertJohan/go.rice"
 	"github.com/codegangsta/negroni"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -85,7 +86,7 @@ func main() {
 	seedUsers(db)
 
 	r := mux.NewRouter()
-	r.Handle("/", http.RedirectHandler("/hello.html", 301))
+	r.Handle("/", http.RedirectHandler("/index.html", 301))
 
 	r.Methods("GET", "HEAD").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		users := fetchUsers(db)
@@ -137,7 +138,11 @@ func main() {
 		w.WriteHeader(http.StatusCreated)
 	})
 
-	n := negroni.Classic()
+	n := negroni.New(
+		negroni.NewRecovery(),
+		negroni.NewLogger(),
+		negroni.NewStatic(rice.MustFindBox("public").HTTPBox()),
+	)
 	n.UseHandler(r)
 	n.Run(":3000")
 }
