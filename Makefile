@@ -35,3 +35,9 @@ types:
 		--externs support/externs/externs.js \
 		--angular_pass \
 		tmp/hello.js
+
+public.rice-box.go: all
+	rice embed-go
+
+hello_embedded: public.rice-box.go
+	go build

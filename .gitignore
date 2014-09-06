@@ -2,6 +2,8 @@
 /bower_components/
 /public/
 /hello
+/go_hello_web
 *.sqlite3
 *.sqlite
 /tmp/
+*.rice-box.go
