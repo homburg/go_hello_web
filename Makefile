@@ -1,11 +1,13 @@
 .PHONY: types
 
+.SUFFIXES:
+
 all: go_hello_web node_modules bower_components public/hello.js public/index.html public/vendor.js public/hello.css
 
 run: all
 	./go_hello_web
 
-go_hello_web:
+go_hello_web: $(shell find . -name "*.go")
 	go build
 	rice append --exec go_hello_web
 
