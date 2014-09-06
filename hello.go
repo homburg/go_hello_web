@@ -11,6 +11,7 @@ import (
 	"github.com/lann/squirrel"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"strconv"
 )
@@ -143,5 +144,9 @@ func main() {
 		negroni.NewStatic(rice.MustFindBox("public").HTTPBox()),
 	)
 	n.UseHandler(r)
-	n.Run(":3000")
+	listen := os.Getenv("LISTEN")
+	if listen == "" {
+		listen = ":3000"
+	}
+	n.Run(listen)
 }
