@@ -46,4 +46,4 @@ hello_embedded: public.rice-box.go
 setup:
 	# For rice
 	sudo apt-get install zip
-	npm install -g bower gulp
+	npm install -q -g bower gulp
