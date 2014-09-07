@@ -1,3 +1,4 @@
 image: go1.2
 script:
+  - go get ./...
   - make go_hello_web
