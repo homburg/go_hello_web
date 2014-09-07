@@ -8,7 +8,7 @@ run: all
 	./go_hello_web
 
 go_hello_web: $(shell find . -name "*.go")
-	go build
+	go build -o go_hello_web
 	rice append --exec go_hello_web
 
 node_modules:
@@ -42,3 +42,8 @@ public.rice-box.go: all
 
 hello_embedded: public.rice-box.go
 	go build
+
+setup:
+	# For rice
+	sudo apt-get install zip
+	npm install -g bower gulp

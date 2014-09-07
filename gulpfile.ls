@@ -2,12 +2,18 @@ require! gulp
 require! "main-bower-files"
 $ = do (require "gulp-load-plugins")
 
-gulp.task "default", ->
+getJs = ->
   gulp.src "app/hello.ls"
     .pipe $.livescript!
     .pipe $.size showFiles: true
     .pipe $.ngAnnotate!
-    .pipe gulp.dest "tmp"
+
+gulp.task "default", ->
+  getJs!
+    .pipe gulp.dest "public"
+
+gulp.task "closure-compiler", ->
+  getJs!
     .pipe $.closureCompiler(
       compilerPath: "bower_components/closure-compiler/compiler.jar"
       fileName: "hello.js"
@@ -17,7 +23,7 @@ gulp.task "default", ->
         "support/externs/externs.js"
     )
     .pipe $.size showFiles: true
-    .pipe gulp.dest "public"
+    .pipe gulp.dest "tmp"
 
   gulp.src "app/index.jade"
     .pipe $.jade!
