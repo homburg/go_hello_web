@@ -2,4 +2,5 @@ image: go1.2
 script:
   - go get ./...
   - go get github.com/GeertJohan/go.rice/rice
+  - export PATH=$PATH:/var/cache/drone/bin
   - make go_hello_web
