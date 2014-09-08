@@ -2,13 +2,20 @@
 
 .SUFFIXES:
 
-all: go_hello_web node_modules bower_components public/hello.js public/index.html public/vendor.js public/hello.css
+all: node_modules bower_components public/hello.js public/index.html public/vendor.js public/hello.css
 
-run: all
+run: go_hello_web all
 	./go_hello_web
 
-go_hello_web: $(shell find . -name "*.go")
-	go build -o go_hello_web
+run\:dev: go_hello_web_bare all
+	./go_hello_web_bare
+
+go_hello_web_bare: $(shell find . -name "*.go")
+	go build -o go_hello_web_bare
+
+go_hello_web: go_hello_web_bare
+	rm -f go_hello_web
+	cp go_hello_web_bare go_hello_web
 	rice append --exec go_hello_web
 
 node_modules:

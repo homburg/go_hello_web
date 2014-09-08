@@ -3,6 +3,7 @@
 /public/
 /hello
 /go_hello_web
+/go_hello_web_bare
 *.sqlite3
 *.sqlite
 /tmp/
