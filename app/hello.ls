@@ -20,7 +20,7 @@ app.factory "Connection", ->
   w = null
   connect = ->
     if !w?
-      w = new WebSocket("ws://localhost:3000/socket")
+      w = new WebSocket("ws://#{location.host}/socket")
     w
   {
     connect: (callback) ->
