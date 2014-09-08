@@ -16,7 +16,24 @@ app.factory "Users", ($resource) ->
   delete: -> res.delete!.$promise
   create: -> res.save!.$promise
 
-app.controller "HelloCtrl", (Users) ->
+app.factory "Connection", ->
+  w = null
+  connect = ->
+    if !w?
+      w = new WebSocket("ws://localhost:3000/socket")
+    w
+  {
+    connect: (callback) ->
+      w = connect!
+      w.onmessage = callback
+
+    connectJson: (callback) ->
+      w = connect!
+      w.onmessage = (event) ->
+        callback JSON.parse event.data
+  }
+
+app.controller "HelloCtrl", ($scope, Users, Connection) ->
   controller =
     body: "body..."
     title: "HelloCtrl title"
@@ -31,10 +48,14 @@ app.controller "HelloCtrl", (Users) ->
 
   controller.delete = ->
     delete controller.user
-    Users.delete!.then fetchUsers
+    Users.delete!
 
   controller.create = ->
-    Users.create!.then fetchUsers
+    Users.create!
+
+  Connection.connectJson (data) ->
+    $scope.$apply ->
+      controller.users = data
 
   /**
    * @param {number} text
@@ -46,4 +67,3 @@ app.controller "HelloCtrl", (Users) ->
 
   fetchUsers!
   controller
-

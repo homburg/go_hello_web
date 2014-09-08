@@ -6,7 +6,9 @@ head
   title Hello ctrl
 body(ng-app="Hello", ng-controller="HelloCtrl as hello")
   h1(ng-bind="hello.title")
-  h2 Users
+  h2
+    span Users
+    sup(ng-show="hello.users", ng-bind="hello.users.length")
   pre(ng-bind="hello.users | json")
   ul
     li

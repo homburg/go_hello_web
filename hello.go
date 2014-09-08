@@ -8,6 +8,7 @@ import (
 	"github.com/codegangsta/negroni"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"github.com/lann/squirrel"
 	"log"
 	"net/http"
@@ -20,6 +21,21 @@ type User struct {
 	Id   int
 	Name string
 	Age  int
+}
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func pushUsers(db *sql.DB, conns []*websocket.Conn) {
+	users := fetchUsers(db)
+	for _, conn := range conns {
+		if nil == users {
+			users = []User{}
+		}
+		websocket.WriteJSON(conn, users)
+	}
 }
 
 func fetchUsers(db *sql.DB) []User {
@@ -73,6 +89,8 @@ func toJson(data interface{}) string {
 }
 
 func main() {
+	var conns []*websocket.Conn
+
 	log.Println("Starting...")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var err error
@@ -87,6 +105,16 @@ func main() {
 	seedUsers(db)
 
 	r := mux.NewRouter()
+
+	r.HandleFunc("/socket", func(w http.ResponseWriter, req *http.Request) {
+		conn, err := upgrader.Upgrade(w, req, nil)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		conns = append(conns, conn)
+	})
 
 	r.Methods("GET", "HEAD").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		users := fetchUsers(db)
@@ -128,6 +156,7 @@ func main() {
 		if nil != err {
 			log.Println(err)
 		}
+		pushUsers(db, conns)
 		w.WriteHeader(http.StatusNoContent)
 		fmt.Fprint(w, "[]")
 	})
@@ -135,6 +164,7 @@ func main() {
 	r.Methods("POST").Path("/data").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		log.Println("Seeding...")
 		seedUsers(db)
+		pushUsers(db, conns)
 		w.WriteHeader(http.StatusCreated)
 	})
 
