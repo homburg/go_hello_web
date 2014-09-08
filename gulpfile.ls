@@ -12,19 +12,6 @@ gulp.task "default", ->
   getJs!
     .pipe gulp.dest "public"
 
-gulp.task "closure-compiler", ->
-  getJs!
-    .pipe $.closureCompiler(
-      compilerPath: "bower_components/closure-compiler/compiler.jar"
-      fileName: "hello.js"
-      warning_level: "VERBOSE"
-      externs:
-        "support/externs/angular-1.2.js"
-        "support/externs/externs.js"
-    )
-    .pipe $.size showFiles: true
-    .pipe gulp.dest "tmp"
-
   gulp.src "app/index.jade"
     .pipe $.jade!
     .pipe gulp.dest "public"
@@ -38,3 +25,15 @@ gulp.task "closure-compiler", ->
     .pipe $.concat "vendor.js"
     .pipe gulp.dest "public"
 
+gulp.task "closure-compiler", ->
+  getJs!
+    .pipe $.closureCompiler(
+      compilerPath: "bower_components/closure-compiler/compiler.jar"
+      fileName: "hello.js"
+      warning_level: "VERBOSE"
+      externs:
+        "support/externs/angular-1.2.js"
+        "support/externs/externs.js"
+    )
+    .pipe $.size showFiles: true
+    .pipe gulp.dest "tmp"
